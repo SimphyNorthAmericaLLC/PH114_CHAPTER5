@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_5_1_5_quiz.html</title>
+<style>
+body{
+  background:#1e1e1e;
+  font-family:Arial, sans-serif;
+  color:white;
+  display:flex;
+  justify-content:center;
+  padding-top:40px;
+}
+#quizBox{
+  background:#2b2b2b;
+  width:500px;
+  padding:25px;
+  border-radius:10px;
+  box-shadow:0 0 15px black;
+}
+h3{
+  margin-top:0;
+}
+button{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  background:#007acc;
+  border:none;
+  color:white;
+  cursor:pointer;
+  border-radius:6px;
+  font-size:14px;
+}
+button:hover{
+  background:#005f99;
+}
+#feedback{
+  margin-top:15px;
+  font-weight:bold;
+}
+#score{
+  margin-top:15px;
+}
+</style>
+</head>
+<body>
+
+<div id="quizBox">
+<h3>EXP_5_1_5 Quiz</h3>
+<div id="question"></div>
+<div id="options"></div>
+<div id="feedback"></div>
+<div id="score"></div>
+</div>
+
+<script>
+const questions = [
+{
+  q: "The angular frequency of the oscillation is about",
+  options: ["5.5 rad/s","5.6 rad/s","5.4 rad/s","5.7 rad/s"],
+  correct: 0
+},
+{
+  q: "The equilibrium position of the oscillation is located around",
+  options: ["-0.3 m","-0.4 m","-0.2 m","-0.5 m"],
+  correct: 0
+},
+{
+  q: "The amplitude of the oscillation is about",
+  options: ["0.33 m","0.66 m","0.11 m","0.22 m"],
+  correct: 0
+},
+{
+  q: "The theoretical maximum speed of the oscillation is about (√(k/m)X₀)",
+  options: ["1.8 m/s","1.9 m/s","2.0 m/s","1.7 m/s"],
+  correct: 0
+},
+{
+  q: "Simphy returns a maximum speed of about",
+  options: ["1.81 m/s","1.91 m/s","2.01 m/s","1.71 m/s"],
+  correct: 0
+},
+{
+  q: "The theoretical maximum acceleration is about ((k/m)X₀)",
+  options: ["9.9 m/s^2","9.8 m/s^2","9.7 m/s^2","9.6 m/s^2"],
+  correct: 0
+},
+{
+  q: "Simphy returns a maximum acceleration of about",
+  options: ["9.9 m/s^2","9.8 m/s^2","9.7 m/s^2","9.6 m/s^2"],
+  correct: 0
+},
+{
+  q: "The theoretical maximum force exerted on the mass is about",
+  options: ["9.9 N","9.8 N","9.7 N","9.6 N"],
+  correct: 0
+}
+];
+
+let current = 0;
+let score = 0;
+
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+}
+
+function loadQuestion(){
+  if(current >= questions.length){
+    document.getElementById("question").innerHTML = "Quiz Complete!";
+    document.getElementById("options").innerHTML = "";
+    document.getElementById("feedback").innerHTML = "";
+    document.getElementById("score").innerHTML = "Final Score: " + score + " / " + questions.length;
+    return;
+  }
+
+  const qObj = questions[current];
+  document.getElementById("question").innerHTML = "<strong>Question " + (current+1) + ":</strong><br><br>" + qObj.q;
+  
+  const opts = qObj.options.map((text, index) => ({text, index}));
+  shuffle(opts);
+
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+
+  opts.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt.text;
+    btn.onclick = () => checkAnswer(opt.index === qObj.correct);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(isCorrect){
+  if(isCorrect){
+    score++;
+    current++;
+    loadQuestion();
+  } else {
+    document.getElementById("feedback").innerHTML = "Incorrect. Restarting quiz...";
+    current = 0;
+    score = 0;
+    setTimeout(() => {
+      document.getElementById("feedback").innerHTML = "";
+      loadQuestion();
+    }, 1000);
+  }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>

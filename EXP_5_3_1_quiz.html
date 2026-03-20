@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_5_3_1_quiz.html</title>
+
+<style>
+body {
+  background-color:#1e1e1e;
+  color:white;
+  font-family: monospace;
+  padding:20px;
+}
+
+.question {
+  margin-bottom:25px;
+}
+
+.answers button {
+  display:block;
+  margin:6px 0;
+  padding:8px 12px;
+  background:#007acc;
+  border:none;
+  color:white;
+  cursor:pointer;
+  width:100%;
+  text-align:left;
+}
+
+.answers button:hover {
+  background:#005f99;
+}
+
+#result {
+  margin-top:20px;
+  font-size:18px;
+  font-weight:bold;
+}
+
+button.restart {
+  margin-top:15px;
+  padding:8px 14px;
+  background:#444;
+}
+</style>
+</head>
+
+<body>
+
+<h3>EXP_5_3_1_quiz</h3>
+
+<div id="quiz"></div>
+<div id="result"></div>
+
+<script>
+
+const questions = [
+  {
+    question: "The solution of the ODE of the damped spring oscillation is most likely of the form",
+    answers: [
+      {text: "x(t) = x_max * exp(-bt / 2m) * cos(omega' * t)", correct: true},
+      {text: "x(t) = x_max * exp(-bt / 2m)", correct: false},
+      {text: "x(t) = x_max * cos(omega' * t)", correct: false},
+      {text: "None of these", correct: false}
+    ]
+  },
+  {
+    question: "If the damped oscillation has characteristic frequency omega', then compared to the original undamped omega_0 = sqrt(k/m), omega' is:",
+    answers: [
+      {text: "omega < omega_0", correct: true},
+      {text: "omega = omega_0", correct: false},
+      {text: "omega > omega_0", correct: false},
+      {text: "None of these", correct: false}
+    ]
+  },
+  {
+    question: "What are the (really surprising) units for b in the damped oscillator ODE (m*x'' + b*x' + k*x = 0)?",
+    answers: [
+      {text: "Kg/s", correct: true},
+      {text: "Kg/s^2", correct: false},
+      {text: "s^2", correct: false},
+      {text: "None of these", correct: false}
+    ]
+  },
+  {
+    question: "Which of the following can be a viable solution for the new characteristic frequency of our damped oscillator?",
+    answers: [
+      {text: "omega = sqrt(k/m - (b/2m)^2)", correct: true},
+      {text: "omega = sqrt(k/m + (b/2m)^2)", correct: false},
+      {text: "omega = sqrt(k/m - (b/2m))", correct: false},
+      {text: "None of these", correct: false}
+    ]
+  }
+];
+
+let currentQuestion = 0;
+let score = 0;
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function showQuestion() {
+  const quizDiv = document.getElementById("quiz");
+  quizDiv.innerHTML = "";
+
+  if (currentQuestion >= questions.length) {
+    document.getElementById("result").innerHTML =
+      "Final Score: " + score + " / " + questions.length +
+      "<br><button class='restart' onclick='restartQuiz()'>Restart</button>";
+    return;
+  }
+
+  const q = questions[currentQuestion];
+  shuffle(q.answers);
+
+  const questionDiv = document.createElement("div");
+  questionDiv.className = "question";
+  questionDiv.innerHTML = "<strong>Question " + (currentQuestion+1) + ":</strong><br>" + q.question;
+
+  const answersDiv = document.createElement("div");
+  answersDiv.className = "answers";
+
+  q.answers.forEach(answer => {
+    const btn = document.createElement("button");
+    btn.innerText = answer.text;
+    btn.onclick = () => selectAnswer(answer.correct);
+    answersDiv.appendChild(btn);
+  });
+
+  quizDiv.appendChild(questionDiv);
+  quizDiv.appendChild(answersDiv);
+}
+
+function selectAnswer(correct) {
+  if (correct) score++;
+  currentQuestion++;
+  showQuestion();
+}
+
+function restartQuiz() {
+  currentQuestion = 0;
+  score = 0;
+  showQuestion();
+}
+
+showQuestion();
+
+</script>
+
+</body>
+</html>

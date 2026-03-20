@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_5_2_9_quiz.html</title>
+<style>
+body{
+  background:#1e1e1e;
+  font-family:Arial, sans-serif;
+  color:white;
+  display:flex;
+  justify-content:center;
+  padding-top:40px;
+}
+#quizBox{
+  background:#2b2b2b;
+  width:500px;
+  padding:25px;
+  border-radius:10px;
+  box-shadow:0 0 15px black;
+}
+h3{
+  margin-top:0;
+}
+button{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  background:#007acc;
+  border:none;
+  color:white;
+  cursor:pointer;
+  border-radius:6px;
+  font-size:14px;
+}
+button:hover{
+  background:#005f99;
+}
+#feedback{
+  margin-top:15px;
+  font-weight:bold;
+}
+#score{
+  margin-top:15px;
+}
+</style>
+</head>
+<body>
+
+<div id="quizBox">
+<h3>EXP_5_2_9 Quiz</h3>
+<div id="question"></div>
+<div id="options"></div>
+<div id="feedback"></div>
+<div id="score"></div>
+</div>
+
+<script>
+const questions = [
+{
+  q: "The box in the middle has a period of about",
+  options: ["1.63 s","1.53 s","1.43 s","1.73 s"],
+  correct: 0
+},
+{
+  q: "The box in the middle experiences",
+  options: [
+    "The exact same forces in addition to the spring force like the box on the left",
+    "Higher buoyancy force since it is obviously deeper",
+    "Lower buoyancy force since it is obviously deeper",
+    "None of these make sense"
+  ],
+  correct: 0
+},
+{
+  q: "The units of the denominator of the derived ω in the case of the box on the left are",
+  options: [
+    "The same units as the spring constant i.e. N/m",
+    "The same units as mass i.e. Kg",
+    "The same units as buoyancy i.e. N",
+    "The same units as density i.e. Kg/m^3"
+  ],
+  correct: 0
+},
+{
+  q: "In light of the above, a logical step regarding the box in the middle would be to",
+  options: [
+    "Add the spring constant to the denominator of the ω of the box on the left",
+    "Add the buoyancy force to the denominator of the ω of the box on the left",
+    "Add the spring force to the denominator of the ω of the box on the left",
+    "None of these make sense"
+  ],
+  correct: 0
+},
+{
+  q: "As far as the box on the right is concerned the restoring force causing the box to perform a simple harmonic oscillation is",
+  options: [
+    "The Hooke force",
+    "The Hooke force in addition to buoyancy",
+    "The Hooke force, the weight in addition to buoyancy",
+    "None of these make sense"
+  ],
+  correct: 0
+},
+{
+  q: "As a result, the box on the right will exhibit a period",
+  options: [
+    "Identical to the spring",
+    "Dependent on the Hooke force, weight and buoyancy",
+    "Dependent on the Hooke force, and buoyancy",
+    "None of these make sense"
+  ],
+  correct: 0
+}
+];
+
+let current = 0;
+let score = 0;
+
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+}
+
+function loadQuestion(){
+  if(current >= questions.length){
+    document.getElementById("question").innerHTML = "Quiz Complete!";
+    document.getElementById("options").innerHTML = "";
+    document.getElementById("feedback").innerHTML = "";
+    document.getElementById("score").innerHTML = "Final Score: " + score + " / " + questions.length;
+    return;
+  }
+
+  const qObj = questions[current];
+  document.getElementById("question").innerHTML =
+    "<strong>Question " + (current+1) + ":</strong><br><br>" + qObj.q;
+
+  const opts = qObj.options.map((text, index) => ({text, index}));
+  shuffle(opts);
+
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+
+  opts.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt.text;
+    btn.onclick = () => checkAnswer(opt.index === qObj.correct);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(isCorrect){
+  if(isCorrect){
+    score++;
+    current++;
+    loadQuestion();
+  } else {
+    document.getElementById("feedback").innerHTML = "Incorrect. Restarting quiz...";
+    current = 0;
+    score = 0;
+    setTimeout(() => {
+      document.getElementById("feedback").innerHTML = "";
+      loadQuestion();
+    }, 1000);
+  }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>

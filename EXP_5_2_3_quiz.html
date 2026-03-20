@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_5_2_3_quiz.html</title>
+<style>
+body{
+  background:#1e1e1e;
+  font-family:Arial, sans-serif;
+  color:white;
+  display:flex;
+  justify-content:center;
+  padding-top:40px;
+}
+#quizBox{
+  background:#2b2b2b;
+  width:500px;
+  padding:25px;
+  border-radius:10px;
+  box-shadow:0 0 15px black;
+}
+h3{
+  margin-top:0;
+}
+button{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  background:#007acc;
+  border:none;
+  color:white;
+  cursor:pointer;
+  border-radius:6px;
+  font-size:14px;
+}
+button:hover{
+  background:#005f99;
+}
+#feedback{
+  margin-top:15px;
+  font-weight:bold;
+}
+#score{
+  margin-top:15px;
+}
+</style>
+</head>
+<body>
+
+<div id="quizBox">
+<h3>EXP_5_2_3 Quiz</h3>
+<div id="question"></div>
+<div id="options"></div>
+<div id="feedback"></div>
+<div id="score"></div>
+</div>
+
+<script>
+const questions = [
+{
+  q: "If the two springs have the same stiffness then the theoretical ω for this oscillator will be",
+  options: ["√(2k/m)","√(k/m)","√(4k/m)","√(k/2m)","√(k/4m)"],
+  correct: 0
+},
+{
+  q: "Setting k = 30 N/m the period of the oscillator is about",
+  options: ["0.4 s","0.5 s","0.3 s","0.6 s"],
+  correct: 0
+},
+{
+  q: "Change Simphy’s k2 to 10 N/m while keeping k1 = 30 N/m and re-run the simulation. The new period is about",
+  options: ["0.4 s","0.5 s","0.3 s","0.6 s"],
+  correct: 1
+},
+{
+  q: "Based on the above, if the two springs are not identical (no resistances) the theoretical ω of the oscillator will be",
+  options: ["√((k1 + k2)/m)","√(4(k1 + k2)/m)","√((k1² + k2²)/m)","√(2(k1² + k2²)/m)","None of these"],
+  correct: 0
+}
+];
+
+let current = 0;
+let score = 0;
+
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+}
+
+function loadQuestion(){
+  if(current >= questions.length){
+    document.getElementById("question").innerHTML = "Quiz Complete!";
+    document.getElementById("options").innerHTML = "";
+    document.getElementById("feedback").innerHTML = "";
+    document.getElementById("score").innerHTML = "Final Score: " + score + " / " + questions.length;
+    return;
+  }
+
+  const qObj = questions[current];
+  document.getElementById("question").innerHTML =
+    "<strong>Question " + (current+1) + ":</strong><br><br>" + qObj.q;
+
+  const opts = qObj.options.map((text, index) => ({text, index}));
+  shuffle(opts);
+
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+
+  opts.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt.text;
+    btn.onclick = () => checkAnswer(opt.index === qObj.correct);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(isCorrect){
+  if(isCorrect){
+    score++;
+    current++;
+    loadQuestion();
+  } else {
+    document.getElementById("feedback").innerHTML = "Incorrect. Restarting quiz...";
+    current = 0;
+    score = 0;
+    setTimeout(() => {
+      document.getElementById("feedback").innerHTML = "";
+      loadQuestion();
+    }, 1000);
+  }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
