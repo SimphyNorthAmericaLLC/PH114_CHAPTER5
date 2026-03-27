@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EXP_5_6_4 Interactive FFT</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: #161a22;
+      --panel-2: #1d2330;
+      --text: #e8eef9;
+      --muted: #9fb0cc;
+      --accent: #53d769;
+      --border: #2c3443;
+      --button: #263247;
+      --button-hover: #33415c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .wrap {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    label { color: var(--muted); font-size: 14px; }
+    input[type="number"], input[type="file"] {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+    button {
+      background: var(--button);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover:not(:disabled) { background: var(--button-hover); }
+    .editor-shell {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--panel);
+      min-height: 350px;
+      margin-bottom: 12px;
+    }
+    .line-numbers {
+      background: #11151d;
+      color: var(--accent);
+      text-align: right;
+      padding: 14px 10px;
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      user-select: none;
+      white-space: pre;
+      overflow: hidden;
+    }
+    textarea {
+      width: 100%;
+      min-height: 350px;
+      resize: vertical;
+      border: none;
+      outline: none;
+      background: var(--panel);
+      color: var(--text);
+      padding: 14px;
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      tab-size: 4;
+      overflow: auto;
+    }
+    .status, .result {
+      margin: 10px 0;
+      color: var(--muted);
+      min-height: 20px;
+    }
+    .result strong { color: var(--text); }
+    .panel {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    #fftPlot {
+      width: 100%;
+      height: 560px;
+      background: white;
+      border-radius: 10px;
+    }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">EXP_5_6_4 Interactive FFT Viewer</div>
+
+    <div class="controls">
+      <div class="group">
+        <label for="fileInput">Upload data_1.txt</label>
+        <input id="fileInput" type="file" accept=".txt,.dat,.csv" />
+      </div>
+      <div class="group">
+        <label for="dtInput">dt (s)</label>
+        <input id="dtInput" type="number" value="0.005" step="0.001" min="0.000001" />
+      </div>
+      <button id="analyzeBtn">Analyze FFT</button>
+      <button id="savePngBtn">Save PNG</button>
+    </div>
+
+    <div class="editor-shell">
+      <div class="line-numbers" id="lineNumbers"></div>
+      <textarea id="codeArea" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+
+# --- Load your data ---
+data1 = np.loadtxt("data_1.txt") 
+# data_1.txt is time vs. spring's length, data_2.txt i time vs. bob's y-position and
+# data_3.txt is time vs. bob's speed
+time_1 = data1[:, 0]
+amplitude_1 = data1[:, 1]
+
+# --- Hardcoded time step ---
+dt = 0.005  # Simphy's sampling rate
+fs = 1 / dt
+n = len(amplitude_1)
+
+# --- FFT Analysis ---
+fft_vals = np.fft.fft(amplitude_1)
+freqs = np.fft.fftfreq(n, d=dt)
+
+# --- Positive frequencies only ---
+mask = freqs > 0
+freqs_pos = freqs[mask]
+fft_vals_pos = np.abs(fft_vals[mask])
+
+# --- Dominant frequency ---
+dominant_freq = freqs_pos[np.argmax(fft_vals_pos)]
+
+# --- Plot ---
+plt.figure(figsize=(10, 5))
+plt.plot(freqs_pos, fft_vals_pos)
+plt.title("FFT Spectrum")
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Amplitude")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+print(f"Dominant frequency: {dominant_freq:.3f} Hz")</textarea>
+    </div>
+
+    <div class="status" id="status">Upload a two-column file and click Analyze FFT.</div>
+    <div class="result" id="result"></div>
+
+    <div class="panel">
+      <div id="fftPlot"></div>
+      <div class="note">Hover over the curve to read exact frequency and amplitude. The dominant frequency is marked with a red dashed line and a red point.</div>
+    </div>
+  </div>
+
+  <script>
+    const codeArea = document.getElementById('codeArea');
+    const lineNumbers = document.getElementById('lineNumbers');
+    const fileInput = document.getElementById('fileInput');
+    const dtInput = document.getElementById('dtInput');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const savePngBtn = document.getElementById('savePngBtn');
+    const statusEl = document.getElementById('status');
+    const resultEl = document.getElementById('result');
+    const plotDiv = document.getElementById('fftPlot');
+
+    function updateLineNumbers() {
+      const lines = codeArea.value.split('\n').length;
+      let nums = '';
+      for (let i = 1; i <= lines; i++) nums += i + '\n';
+      lineNumbers.textContent = nums;
+    }
+    codeArea.addEventListener('input', updateLineNumbers);
+    codeArea.addEventListener('scroll', () => { lineNumbers.scrollTop = codeArea.scrollTop; });
+    updateLineNumbers();
+
+    function parseTwoColumnText(text) {
+      const rows = text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line.length > 0 && !line.startsWith('#'));
+
+      const x = [];
+      const y = [];
+
+      for (const row of rows) {
+        const parts = row.split(/[\s,;]+/).filter(Boolean);
+        if (parts.length < 2) continue;
+        const a = Number(parts[0]);
+        const b = Number(parts[1]);
+        if (Number.isFinite(a) && Number.isFinite(b)) {
+          x.push(a);
+          y.push(b);
+        }
+      }
+
+      if (x.length < 4) {
+        throw new Error('Need at least 4 valid rows of two-column numeric data.');
+      }
+      return { x, y };
+    }
+
+    function fftReal(signal, dt) {
+      const n = signal.length;
+      const freqs = [];
+      const amps = [];
+      const half = Math.floor(n / 2);
+
+      for (let k = 1; k < half; k++) {
+        let re = 0;
+        let im = 0;
+        for (let t = 0; t < n; t++) {
+          const angle = -2 * Math.PI * k * t / n;
+          re += signal[t] * Math.cos(angle);
+          im += signal[t] * Math.sin(angle);
+        }
+        freqs.push(k / (n * dt));
+        amps.push(Math.hypot(re, im));
+      }
+      return { freqs, amps };
+    }
+
+    async function analyze() {
+      try {
+        const file = fileInput.files[0];
+        if (!file) throw new Error('Please upload data_1.txt first.');
+
+        const dt = Number(dtInput.value);
+        if (!Number.isFinite(dt) || dt <= 0) throw new Error('dt must be a positive number.');
+
+        statusEl.textContent = 'Reading file and computing FFT...';
+        const text = await file.text();
+        const parsed = parseTwoColumnText(text);
+        const { freqs, amps } = fftReal(parsed.y, dt);
+
+        if (freqs.length === 0) throw new Error('FFT produced no positive frequencies.');
+
+        let maxIndex = 0;
+        for (let i = 1; i < amps.length; i++) {
+          if (amps[i] > amps[maxIndex]) maxIndex = i;
+        }
+
+        const dominantFreq = freqs[maxIndex];
+        const dominantAmp = amps[maxIndex];
+
+        const trace = {
+          x: freqs,
+          y: amps,
+          type: 'scatter',
+          mode: 'lines',
+          name: 'FFT Spectrum',
+          hovertemplate: 'Frequency: %{x:.4f} Hz<br>Amplitude: %{y:.4f}<extra></extra>'
+        };
+
+        const markerTrace = {
+          x: [dominantFreq],
+          y: [dominantAmp],
+          type: 'scatter',
+          mode: 'markers',
+          name: 'Dominant Frequency',
+          marker: { color: 'red', size: 10 },
+          hovertemplate: 'Dominant frequency: %{x:.4f} Hz<br>Amplitude: %{y:.4f}<extra></extra>'
+        };
+
+        const layout = {
+          title: 'FFT Spectrum',
+          paper_bgcolor: 'white',
+          plot_bgcolor: 'white',
+          font: { color: 'black' },
+          xaxis: {
+            title: 'Frequency (Hz)',
+            gridcolor: '#d9d9d9',
+            zerolinecolor: '#d9d9d9'
+          },
+          yaxis: {
+            title: 'Amplitude',
+            gridcolor: '#d9d9d9',
+            zerolinecolor: '#d9d9d9'
+          },
+          shapes: [{
+            type: 'line',
+            x0: dominantFreq,
+            x1: dominantFreq,
+            y0: 0,
+            y1: dominantAmp,
+            line: { color: 'red', width: 2, dash: 'dash' }
+          }],
+          annotations: [{
+            x: dominantFreq,
+            y: dominantAmp,
+            text: `Dominant = ${dominantFreq.toFixed(4)} Hz`,
+            showarrow: true,
+            arrowhead: 2,
+            ax: 40,
+            ay: -40,
+            bgcolor: 'rgba(255,255,255,0.9)',
+            bordercolor: 'red'
+          }],
+          margin: { l: 70, r: 25, t: 60, b: 60 }
+        };
+
+        await Plotly.newPlot(plotDiv, [trace, markerTrace], layout, { responsive: true, displaylogo: false });
+        resultEl.innerHTML = `<strong>Dominant frequency:</strong> ${dominantFreq.toFixed(4)} Hz &nbsp;&nbsp; <strong>Amplitude:</strong> ${dominantAmp.toFixed(4)} &nbsp;&nbsp; <span class="small">Points analyzed: ${parsed.y.length}</span>`;
+        statusEl.textContent = 'FFT complete.';
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        resultEl.textContent = '';
+      }
+    }
+
+    analyzeBtn.addEventListener('click', analyze);
+    savePngBtn.addEventListener('click', async () => {
+      try {
+        await Plotly.downloadImage(plotDiv, {
+          format: 'png',
+          filename: 'EXP_5_6_4_fft',
+          width: 1200,
+          height: 700,
+          scale: 2
+        });
+      } catch (err) {
+        statusEl.textContent = 'Could not save PNG: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
