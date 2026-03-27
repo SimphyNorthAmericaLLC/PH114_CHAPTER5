@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EXP_5_5_1</title>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: #161a22;
+      --panel-2: #1d2330;
+      --text: #e8eef9;
+      --muted: #9fb0cc;
+      --accent: #53d769;
+      --border: #2c3443;
+      --button: #263247;
+      --button-hover: #33415c;
+      --danger: #8b1e1e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    button {
+      background: var(--button);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover:not(:disabled) { background: var(--button-hover); }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .editor-shell {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--panel);
+      min-height: 460px;
+    }
+    .line-numbers {
+      background: #11151d;
+      color: var(--accent);
+      text-align: right;
+      padding: 14px 10px;
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      user-select: none;
+      white-space: pre;
+      overflow: hidden;
+    }
+    textarea {
+      width: 100%;
+      min-height: 460px;
+      resize: vertical;
+      border: none;
+      outline: none;
+      background: var(--panel);
+      color: var(--text);
+      padding: 14px;
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      tab-size: 4;
+      overflow: auto;
+    }
+    .status {
+      margin: 12px 0;
+      color: var(--muted);
+      min-height: 22px;
+    }
+    .output-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .panel {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .panel h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #plotImage {
+      max-width: 100%;
+      height: auto;
+      display: none;
+      background: white;
+      border-radius: 8px;
+    }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">EXP_5_5_1</div>
+
+    <div class="controls">
+      <button id="runBtn">Run Code</button>
+      <button id="savePngBtn" disabled>Save PNG</button>
+      <button id="savePdfBtn" disabled>Save PDF</button>
+    </div>
+
+    <div class="editor-shell">
+      <div class="line-numbers" id="lineNumbers"></div>
+      <textarea id="codeArea" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+from scipy.fft import fft, fftfreq
+
+# Given parameters
+F0 = 1.5
+k = 20  # N/m
+m = 1.0  # kg
+b = 0.  # damping coefficient (kg/s); set &gt;0 to test damping
+omega = 1.2  # Driving frequency (rad/s)
+t_span = (0, 60)  # Time span for the solution
+t_eval = np.linspace(t_span[0], t_span[1], 500)  # Time points for solution
+
+# Define the forcing function
+def forcing_function(t):
+    return F0 * np.cos(omega * t)
+
+# Define the damped harmonic oscillator ODE
+def harmonic_oscillator(t, y):
+    x, v = y
+    dxdt = v
+    dvdt = (forcing_function(t) - b * v - k * x) / m
+    return [dxdt, dvdt]
+
+# Initial conditions: [x(0), v(0)]
+y0 = [0, 0]
+
+# Solve the ODE numerically
+solution = solve_ivp(harmonic_oscillator, t_span, y0, t_eval=t_eval)
+t = solution.t
+x = solution.y[0]
+
+# Compute natural frequency
+omega_0 = np.sqrt(k / m)
+
+# Theoretical steady-state amplitude (with damping)
+numerator = F0 / m
+denominator = np.sqrt((omega_0**2 - omega**2)**2 + (b * omega / m)**2)
+A = numerator / denominator
+
+# Steady-state phase (optional)
+phi = 0  # assuming zero phase for simplicity here
+x_ss = A * np.cos(omega * t - phi)
+
+# FFT on the numerical solution
+N = len(t)
+T = t[1] - t[0]  # Sampling interval
+yf = fft(x)
+xf = fftfreq(N, T)[:N//2]
+amplitudes = 2.0 / N * np.abs(yf[:N//2])
+powers = amplitudes**2
+
+# Find top dominant frequencies
+peaks_indices = np.argsort(powers)[::-1]
+dominant_indices = peaks_indices[:5]
+dominant_frequencies = xf[dominant_indices]
+dominant_amplitudes = amplitudes[dominant_indices]
+dominant_powers = powers[dominant_indices]
+
+# Filter out less significant frequencies
+threshold = 0.1 * np.max(powers)
+significant_indices = dominant_powers &gt; threshold
+filtered_frequencies = dominant_frequencies[significant_indices]
+filtered_amplitudes = dominant_amplitudes[significant_indices]
+filtered_powers = dominant_powers[significant_indices]
+
+# Print results
+print(&quot;Significant frequencies, their amplitudes, and power spectrum magnitudes:&quot;)
+for freq, amp, power in zip(filtered_frequencies, filtered_amplitudes, filtered_powers):
+    print(f&quot;Frequency: {freq:.3f} Hz, Amplitude: {amp:.4f}, Power: {power:.4f}&quot;)
+
+# Plot numerical vs theoretical solution
+plt.figure(figsize=(10, 6))
+plt.plot(t, x, label='Numerical Solution (with Transient)', color='b')
+plt.plot(t, x_ss, '--', label='Theoretical Steady-State (with Damping)', color='r')
+plt.title('Forced Oscillator: Displacement vs Time')
+plt.xlabel('Time (s)')
+plt.ylabel('Displacement (m)')
+plt.legend()
+plt.grid(True)
+plt.show()</textarea>
+    </div>
+
+    <div class="status" id="status">Loading Pyodide…</div>
+
+    <div class="output-grid">
+      <div class="panel">
+        <h3>Output</h3>
+        <pre id="stdout"></pre>
+      </div>
+      <div class="panel">
+        <h3>Plot</h3>
+        <img id="plotImage" alt="Generated plot" />
+        <div class="note">The latest Matplotlib figure will appear here.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const codeArea = document.getElementById('codeArea');
+    const lineNumbers = document.getElementById('lineNumbers');
+    const runBtn = document.getElementById('runBtn');
+    const savePngBtn = document.getElementById('savePngBtn');
+    const savePdfBtn = document.getElementById('savePdfBtn');
+    const stdoutEl = document.getElementById('stdout');
+    const plotImage = document.getElementById('plotImage');
+    const statusEl = document.getElementById('status');
+
+    let pyodide = null;
+    let plotReady = false;
+
+    function updateLineNumbers() {
+      const lines = codeArea.value.split('\n').length;
+      let nums = '';
+      for (let i = 1; i <= lines; i++) nums += i + '\n';
+      lineNumbers.textContent = nums;
+    }
+
+    function syncScroll() {
+      lineNumbers.scrollTop = codeArea.scrollTop;
+    }
+
+    function downloadFromFS(filename, mimeType) {
+      if (!pyodide) return;
+      try {
+        const data = pyodide.FS.readFile(filename);
+        const blob = new Blob([data], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        statusEl.textContent = 'Could not save file: ' + err;
+      }
+    }
+
+    codeArea.addEventListener('input', updateLineNumbers);
+    codeArea.addEventListener('scroll', syncScroll);
+    updateLineNumbers();
+
+    async function initPyodideAndPackages() {
+      pyodide = await loadPyodide();
+      await pyodide.loadPackage(['numpy', 'matplotlib', 'scipy']);
+      statusEl.textContent = 'Pyodide is ready.';
+      runBtn.disabled = false;
+    }
+
+    function htmlDecode(str) {
+      const txt = document.createElement('textarea');
+      txt.innerHTML = str;
+      return txt.value;
+    }
+
+    async function runCode() {
+      runBtn.disabled = true;
+      savePngBtn.disabled = true;
+      savePdfBtn.disabled = true;
+      stdoutEl.textContent = '';
+      plotImage.style.display = 'none';
+      plotImage.removeAttribute('src');
+      plotReady = false;
+      statusEl.textContent = 'Running…';
+
+      const userCode = htmlDecode(codeArea.value);
+
+      const wrappedCode = `
+import io, sys, base64, os
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+plt.rcParams['figure.facecolor'] = 'white'
+plt.rcParams['axes.facecolor'] = 'white'
+plt.rcParams['savefig.facecolor'] = 'white'
+plt.rcParams['savefig.edgecolor'] = 'white'
+
+stdout_capture = io.StringIO()
+sys.stdout = stdout_capture
+sys.stderr = stdout_capture
+
+_original_show = plt.show
+
+def _safe_show(*args, **kwargs):
+    return None
+
+plt.show = _safe_show
+
+for _fname in ['plot.png', 'plot.pdf', '__plot_b64.txt']:
+    try:
+        os.remove(_fname)
+    except FileNotFoundError:
+        pass
+
+try:
+${userCode.split('\n').map(line => '    ' + line).join('\n')}
+    figs = plt.get_fignums()
+    if figs:
+        fig = plt.figure(figs[-1])
+        fig.tight_layout()
+        fig.savefig('plot.png', dpi=200, bbox_inches='tight')
+        fig.savefig('plot.pdf', bbox_inches='tight')
+        with open('plot.png', 'rb') as f:
+            b64 = base64.b64encode(f.read()).decode('utf-8')
+        with open('__plot_b64.txt', 'w') as f:
+            f.write(b64)
+finally:
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    plt.show = _original_show
+
+result_text = stdout_capture.getvalue()
+`;
+
+      try {
+        await pyodide.runPythonAsync(wrappedCode);
+        const output = pyodide.globals.get('result_text');
+        stdoutEl.textContent = output || '';
+
+        let hasPlot = false;
+        try {
+          const b64 = pyodide.FS.readFile('__plot_b64.txt', { encoding: 'utf8' });
+          if (b64 && b64.trim()) {
+            plotImage.src = 'data:image/png;base64,' + b64.trim();
+            plotImage.style.display = 'block';
+            hasPlot = true;
+          }
+        } catch (e) {}
+
+        plotReady = hasPlot;
+        savePngBtn.disabled = !hasPlot;
+        savePdfBtn.disabled = !hasPlot;
+        statusEl.textContent = hasPlot ? 'Done.' : 'Done. No plot was generated.';
+      } catch (err) {
+        stdoutEl.textContent = 'ERROR:\n' + err;
+        statusEl.textContent = 'Execution failed.';
+      } finally {
+        runBtn.disabled = false;
+      }
+    }
+
+    runBtn.disabled = true;
+    runBtn.addEventListener('click', runCode);
+    savePngBtn.addEventListener('click', () => downloadFromFS('plot.png', 'image/png'));
+    savePdfBtn.addEventListener('click', () => downloadFromFS('plot.pdf', 'application/pdf'));
+
+    initPyodideAndPackages().catch(err => {
+      statusEl.textContent = 'Failed to load Pyodide: ' + err;
+    });
+  </script>
+</body>
+</html>
