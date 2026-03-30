@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CH5 Exit Quiz — Restart on Wrong</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height: 1.45; margin: 0; padding: 24px; background: #0b0b0b; color: #f2f2f2; }
+  #quiz2 { max-width: 760px; margin: 0 auto; }
+  #q2_stem { margin: .5rem 0 1rem; font-size: 1.05rem; }
+  #q2_options { display: grid; gap: .5rem; }
+  .q2_option { border: 1px solid #333; border-radius: 10px; padding: .6rem .8rem; cursor: pointer; text-align: left; background:#121212; color:#f2f2f2; }
+  .q2_option:hover { background: #161616; }
+  #q2_feedback { margin-top: .9rem; min-height: 1.2rem; color:#aaa; }
+  #q2_nav { margin-top: 1rem; display: flex; gap: .6rem; }
+  button { padding: .55rem .9rem; border-radius: 10px; border: 1px solid #333; background: #1b1b1b; color: #f2f2f2; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div id="quiz2">
+    <h3 id="q2_progress"></h3>
+    <div id="q2_stem"></div>
+    <div id="q2_options"></div>
+    <div id="q2_feedback"></div>
+    <div id="q2_nav">
+      <button id="q2_restart" style="margin-left:auto;">Restart</button>
+    </div>
+  </div>
+
+<script>
+/* Exact wording preserved. Option order is exactly as provided (no shuffling). */
+const quiz2 = [
+  {
+    "stem": "A mass m attached to a spring k has some period T when oscillating horizontally. The same spring with the same mass on a smooth inclined surface of angle Z (with respect to the ground) will have a period of",
+    "choices": [
+      "T",
+      "T sin(Z)",
+      "T cos(Z)",
+      "none of these apply"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A mass m attached to a spring k has some period T when oscillating horizontally and pulled back by X. The same spring and mass when pulled back by 2X will oscillate at",
+    "choices": [
+      "T",
+      "2T",
+      "T/2",
+      "none of these apply"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A mass m attached to a spring k has maximum speed V when oscillating along the vertical. At that moment the acceleration of the mass will be",
+    "choices": [
+      "zero",
+      "g",
+      "maximum",
+      "minimum"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A mass m attached to a spring k has maximum speed V when oscillating along the horizontal. At that moment the acceleration of the mass will be",
+    "choices": [
+      "zero",
+      "g",
+      "maximum",
+      "minimum"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A mass m attached to a spring k but the mass is experiencing a resistance that is proportional to its speed. Eventually what is gong to happen is that",
+    "choices": [
+      "the period will gradually become shorter at every cycle",
+      "the amplitude of the oscillation will gradually become shorter at every cycle",
+      "both a and b",
+      "none of these apply"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "stem": "A mass m attached to a spring k and everything mounted on a platform that accelerates to the right with acceleration X. The spring+mass will oscillate with period that is",
+    "choices": [
+      "proportional to X",
+      "reversely proportional to X",
+      "independent of X"
+    ],
+    "correctIndex": 2
+  },
+  {
+    "stem": "A mass m attached to a spring k and everything mounted inside a tube that rotates with a constant angular acceleration Y. The spring+mass will oscillate with period that is",
+    "choices": [
+      "proportional to Y",
+      "reversely proportional to Y",
+      "independent of Y"
+    ],
+    "correctIndex": 2
+  },
+  {
+    "stem": "A mass m attached to a spring k and everything mounted on a platform that accelerates to the right with acceleration X. The total spring+mass energy will",
+    "choices": [
+      "remain constant",
+      "keep increasing",
+      "keep decreasing"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A mass m attached to a spring k and everything mounted on a platform that moves to the right with constant speed X. The total spring+mass energy will",
+    "choices": [
+      "remain constant",
+      "keep increasing",
+      "keep decreasing"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A mass m1 attached to a spring k is at rest on a smooth horizontal surface. Another object with mass m2 collides at speed V with m1 (attached to the spring) and eventually m1 starts oscillating while mass m2 starts moving in the opposite direction. The period of oscillation will only depend on",
+    "choices": [
+      "m1, m2, k",
+      "m1, m2, k and V",
+      "m1, m2, k, V and restitution coef.",
+      "none of these apply"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A mass m1 attached to a spring k is at rest on a smooth horizontal surface. Another object with mass m2 collides at speed V with m1 (attached to the spring) and eventually m1 starts oscillating while mass m2 starts moving in the opposite direction. The maximum displacement of the oscillation will only depend on",
+    "choices": [
+      "m1, m2, k",
+      "m1, m2, k and V",
+      "m1, m2, k, V and restitution coef.",
+      "none of these apply"
+    ],
+    "correctIndex": 2
+  },
+  {
+    "stem": "Resonance occurs when",
+    "choices": [
+      "the damping coefficient is higher than usual",
+      "the external force frequency is much higher than the natural frequency",
+      "the external force frequency is very close to the damping coefficient",
+      "none of these apply"
+    ],
+    "correctIndex": 3
+  },
+  {
+    "stem": "The beats phenomenon occurs when",
+    "choices": [
+      "in very free oscillation",
+      "in all forced oscillations",
+      "when the system is resonating",
+      "none of these apply"
+    ],
+    "correctIndex": 3
+  },
+  {
+    "stem": "A simple pendulum (point mass) with L=1 m will always have a period of",
+    "choices": [
+      "2 s",
+      "1 s",
+      "more information is needed"
+    ],
+    "correctIndex": 2
+  },
+  {
+    "stem": "Two identical simple pendula (point mass) are located at two different locations. Pendulum X is in the north pole and pendulum Y in the equator. The comparison of their periods will be",
+    "choices": [
+      "T_X>T_Y (X slower than Y)",
+      "T_X<T_Y (X faster than Y)",
+      "T_X=T_Y"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "stem": "Two simple pendula of the same string length; one has a wooden bob (pendulum A) and the other a Styrofoam bob (pendulum B), both of the same volume. If their initial displacements are the same then, in reality, their periods will be",
+    "choices": [
+      "T_A>T_B",
+      "T_B>T_A",
+      "T_A=T_B"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "stem": "Two identical uniform rods are oscillating. Rod A is oscillating about its end while rod B oscillates about a point between its center of mass and its end. If the initial displacements are the same, their periods will be",
+    "choices": [
+      "T_A>T_B",
+      "T_B>T_A",
+      "T_A=T_B"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "Two identical uniform rods are displaced at different angles. Rod A has its pivot at its upper end while rod B has its pivot about its center of mass. If the initial displacements are completely different, then their periods will be",
+    "choices": [
+      "T_A>T_B",
+      "T_B>T_A",
+      "T_A=T_B",
+      "More information is needed"
+    ],
+    "correctIndex": 0
+  }
+];
+
+const els = {
+  progress: document.getElementById('q2_progress'),
+  stem: document.getElementById('q2_stem'),
+  options: document.getElementById('q2_options'),
+  feedback: document.getElementById('q2_feedback'),
+  restart: document.getElementById('q2_restart'),
+};
+
+let idx = 0;
+let score = 0;
+
+function render() {
+  const total = quiz2.length;
+  els.progress.textContent = `Question ${idx+1} of ${total}  ·  Score: ${score}/${total}`;
+  els.stem.textContent = quiz2[idx].stem;
+  els.options.innerHTML = '';
+  els.feedback.textContent = '';
+
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  quiz2[idx].choices.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q2_option';
+    btn.type = 'button';
+    btn.innerHTML = `<strong>${letters[i]})</strong> ${text}`;
+    btn.addEventListener('click', () => handleChoice(i));
+    els.options.appendChild(btn);
+  });
+}
+
+function handleChoice(i) {
+  const correct = quiz2[idx].correctIndex;
+  if (i === correct) {
+    score++;
+    els.feedback.textContent = 'Correct.';
+    setTimeout(() => {
+      idx++;
+      if (idx < quiz2.length) {
+        render();
+      } else {
+        els.progress.textContent = `Completed · Final Score: ${score}/${quiz2.length}`;
+        els.stem.textContent = 'Quiz finished.';
+        els.options.innerHTML = '';
+        els.feedback.textContent = 'Press Restart to try again.';
+      }
+    }, 600);
+  } else {
+    els.feedback.textContent = 'Incorrect — restarting from Question 1…';
+    setTimeout(() => { idx = 0; score = 0; render(); }, 700);
+  }
+}
+
+els.restart.addEventListener('click', () => { idx = 0; score = 0; render(); });
+render();
+</script>
+</body>
+</html>
